@@ -1,9 +1,9 @@
-function fig = radar_plot(data, dim_legends, data_legends, params)
+function axes_handle = radar_plot(data, dim_legends, data_legends, params)
 % radar_plot  Plot values in radar-like plot type.
-%   fig = radar_plot(data, dim_legends, data_legends)
+%   axes_handle = radar_plot(data, dim_legends, data_legends)
 %              - plot radar using the data and label axis with dim_labels and data legend with data_legends.
 %              - each row of the data is one dimmension (axis of radar), columns are datapoints
-%   fig = radar_plot(data, dim_legends, data_legends, params)
+%   axes_handle = radar_plot(data, dim_legends, data_legends, params)
 %              - params is a structure containing additional parameters for radar plot
 %                (available params and their default values are described at beginnig of the code)
 %
@@ -17,7 +17,7 @@ function fig = radar_plot(data, dim_legends, data_legends, params)
 %        dim_legend = {'X1', 'X2', 'X3', 'X4', 'X5'};
 %        params.axis_reverse = [1 0 0 1 0];
 %        params.data_symbols = {'o', 'x', 'o', 'x'};
-%        fig = radar_plot(P, dim_legend, data_legend, params);
+%        axes_handle = radar_plot(P, dim_legend, data_legend, params);
 %
 %
 % Copyright (c) 2016 Tomas Vojir
@@ -48,6 +48,8 @@ function fig = radar_plot(data, dim_legends, data_legends, params)
     [dim, nPoints] = size(data);
 
     % set parameters default values and look if there are set externally
+    axes_handle= [];            % handle to axes into which to plot
+    axes_visible = 'On';      % show axes {'On', 'Off'}
     axis_lims = [];             % axis limits dim*2 [min, max];
     axis_reverse = [];          % should the axis be reversed (i.e. axis max at the radar center) dim*1 [bool]
     axis_color = [1, 1, 1]*0.8; % color of the axis and isocurves
@@ -59,7 +61,6 @@ function fig = radar_plot(data, dim_legends, data_legends, params)
     marker_size = 6;            % size of the datapoints markers
     data_colors = hsv(nPoints); % colors of the datapoints dim*3
     data_symbols = repmat({'o', 'x', 's', '^', 'p', '>'}, [1, ceil(nPoints/6)]); % datapoints markers types dim*1
-    figure_visible = 'On';      % show figure {'On', 'Off'}
     show_legend = true;         % show datapoints legend [bool]
     rotate_dim_legend = true;   % rotate axis labels to match the axis rotation [bool]
     dim_legend_font = 'AvantGarde'; % font of the axis labels
@@ -67,6 +68,8 @@ function fig = radar_plot(data, dim_legends, data_legends, params)
     dim_legend_font_bold = false;   % font bold of the axis labels
     show_dim_scale_label = true;    % show axis scale (min, max) in the axis lablel
 
+    if isfield(params, 'axes_handle'), axes_handle = params.axes_handle; end;
+    if isfield(params, 'axes_visible'), axes_visible = params.axes_visible; end;
     if isfield(params, 'axis_lims'), axis_lims = params.axis_lims; end;
     if isfield(params, 'axis_reverse'), axis_reverse = params.axis_reverse; end;
     if isfield(params, 'axis_color'), axis_color = params.axis_color; end;
@@ -78,7 +81,6 @@ function fig = radar_plot(data, dim_legends, data_legends, params)
     if isfield(params, 'marker_size'), marker_size = params.marker_size; end;
     if isfield(params, 'data_colors'), data_colors = params.data_colors; end;
     if isfield(params, 'data_symbols'), data_symbols = params.data_symbols; end;
-    if isfield(params, 'figure_visible'), figure_visible = params.figure_visible; end;
     if isfield(params, 'show_legend'), show_legend = params.show_legend; end;
     if isfield(params, 'rotate_dim_legend'), rotate_dim_legend = params.rotate_dim_legend; end;
     if isfield(params, 'dim_legend_font'), dim_legend_font = params.dim_legend_font; end;
@@ -87,7 +89,11 @@ function fig = radar_plot(data, dim_legends, data_legends, params)
     if isfield(params, 'show_dim_scale_label'), show_dim_scale_label = params.show_dim_scale_label; end;
 
 %%% Plot the axes
-    fig = figure('Visible', figure_visible);
+    if ~isempty(axes_handle) && isgraphics(axes_handle)
+        axes(axes_handle);
+    else
+        axes_handle = axes('Visible', axes_visible);
+    end
     hold on;
 
     % Radial offset per axis, first axis is vertical
